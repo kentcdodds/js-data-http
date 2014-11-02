@@ -71,12 +71,21 @@ dsHttpAdapterPrototype.HTTP = function (config) {
   if (_this.defaults.forceTrailingSlash && config.url[config.url.length] !== '/') {
     config.url += '/';
   }
-  return http(config).then(function (data) {
-    if (_this.defaults.log) {
-      _this.defaults.log(data.config.method.toUpperCase() + ' request: ' + data.config.url + ' Time taken: ' + (new Date().getTime() - start) + 'ms', data);
-    }
-    return data;
-  });
+
+  function getLogger(isError) {
+    return function logResponse(data) {
+      if (_this.defaults.log) {
+        _this.defaults.log((isError ? 'FAILED ' : '') + data.config.method.toUpperCase() + ' request: ' + data.config.url + ' Time taken: ' + (new Date().getTime() - start) + 'ms', data);
+      }
+      if (isError) {
+        throw data;
+      } else {
+        return data;
+      }
+    };
+  }
+
+  return http(config).then(getLogger(), getLogger(true));
 };
 
 dsHttpAdapterPrototype.GET = function (url, config) {
@@ -217,4 +226,3 @@ dsHttpAdapterPrototype.destroyAll = function (resourceConfig, params, options) {
 };
 
 module.exports = DSHttpAdapter;
-
