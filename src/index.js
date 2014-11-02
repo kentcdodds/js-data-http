@@ -41,6 +41,11 @@ defaultsPrototype.log = console ? function (a, b, c, d, e) {
 } : function () {
 };
 
+defaultsPrototype.errorLog = console ? function (a, b, c, d, e) {
+  console.error(a, b, c, d, e);
+} : function () {
+};
+
 defaultsPrototype.deserialize = function (resourceName, data) {
   return data ? ('data' in data ? data.data : data) : data;
 };
@@ -76,6 +81,11 @@ dsHttpAdapterPrototype.HTTP = function (config) {
       _this.defaults.log(data.config.method.toUpperCase() + ' request: ' + data.config.url + ' Time taken: ' + (new Date().getTime() - start) + 'ms', data);
     }
     return data;
+  }, function(data) {
+    if (_this.defaults.errorLog) {
+      _this.defaults.errorLog('FAILED ' + data.config.method.toUpperCase() + ' request: ' + data.config.url + ' Time taken: ' + (new Date().getTime() - start) + 'ms', data);
+    }
+    throw data;
   });
 };
 
